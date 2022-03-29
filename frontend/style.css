@@ -1,0 +1,365 @@
+body {
+  height: 100%;
+  width: 100%;
+  margin: auto;
+  font-family: "Montserrat", sans-serif;
+}
+
+#root {
+  width: 100%;
+}
+
+#root .landingPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100vh;
+}
+
+#root .landingPage .card {
+  position: relative;
+  height: 86vh;
+  width: 100vw;
+  border: transparent;
+  background-color: rgb(236, 232, 232);
+  border-radius: 25px;
+  opacity: 0.7;
+  margin-top: -4vh;
+}
+
+#root .landingPage header {
+  width: 100vw;
+  height: 18vh;
+  background-color: #4f6eda;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 0 85% 85% / 30%;
+  background-image: linear-gradient(135deg, #4f6eda 10%, #ffce31 100%);
+  z-index: 1;
+}
+
+#root .landingPage header form {
+  display: flex;
+  flex-direction: column;
+  /*justify-content: space-evenly;*/
+  align-items: center;
+  text-align: center;
+  width: 400px;
+  height: 125px;
+}
+
+#root .landingPage header form .cityInput {
+  color: #fff;
+  border-bottom: 2px solid #fff;
+  font-size: 20px;
+  text-align: center;
+  margin-top: 1vw;
+  margin-bottom: 1vw;
+}
+
+::placeholder {
+  color: #fff;
+  opacity: 0.7;
+}
+
+#root .landingPage .card .dailyDetails {
+  position: absolute;
+  display: none;
+  height: 100%;
+  width: 730px;
+  left: 30px;
+  transition: 1s;
+}
+
+#root .landingPage .card .dailyDetails .dayCard {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  height: 460px;
+  width: 100px;
+  background: rgba(154, 170, 228, 0.842);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#root .landingPage .card .dailyDetails .dayCard.todayCard {
+  background-color: #4f6eda;
+  border: 2px solid #000;
+}
+
+#root .landingPage .card .dailyDetails .dayCard p {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+#root .landingPage .card .dailyDetails .dayCard .icon {
+  width: 100px;
+}
+
+@keyframes dropDown {
+  0% {
+    top: 50%;
+    transform: translateY(calc(-50% - 100px));
+  }
+  100% {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
+
+#root .landingPage .card .dailyDetails .dayCard:nth-child(1) {
+  left: 0;
+  animation: 0.5s ease-out both dropDown;
+}
+
+#root .landingPage .card .dailyDetails .dayCard:nth-child(2) {
+  left: 105px;
+  animation: 0.5s ease-out 0.1s both dropDown;
+}
+
+#root .landingPage .card .dailyDetails .dayCard:nth-child(3) {
+  left: 210px;
+  animation: 0.5s ease-out 0.2s both dropDown;
+}
+
+#root .landingPage .card .dailyDetails .dayCard:nth-child(4) {
+  left: 315px;
+  animation: 0.5s ease-out 0.3s both dropDown;
+}
+
+#root .landingPage .card .dailyDetails .dayCard:nth-child(5) {
+  left: 420px;
+  animation: 0.5s ease-out 0.4s both dropDown;
+}
+
+#root .landingPage .card .dailyDetails .dayCard:nth-child(6) {
+  left: 525px;
+  animation: 0.5s ease-out 0.5s both dropDown;
+}
+
+#root .landingPage .card .dailyDetails .dayCard:nth-child(7) {
+  left: 630px;
+  animation: 0.5s ease-out 0.6s both dropDown;
+}
+
+#root .landingPage .card .dailyDetails.show {
+  display: block;
+}
+
+#root .landingPage .card .cardPanel.detailView {
+  position: absolute;
+  height: 460px;
+  width: 700px;
+  background: rgba(154, 170, 228, 0.842);
+  left: 100%;
+  top: 50%;
+  transform: translate(calc(-100% - 30px), -50%);
+  transition: 1s;
+}
+
+#root .landingPage .card .cardPanel .favorite.clicked {
+  animation: 0.6s linear addedToFavs;
+}
+
+@keyframes addedToFavs {
+  0% {
+    transform: rotateY(0) scale(1);
+  }
+  50% {
+    transform: rotateY(360deg) scale(1.2);
+  }
+  100% {
+    transform: rotateY(720) scale(1);
+  }
+}
+
+#root .landingPage .card .cardPanel .moreInfo {
+  position: absolute;
+  top: 125px;
+  left: 20%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  text-decoration: underline;
+  font-weight: 800;
+  z-index: 99;
+}
+
+#root .landingPage header form button {
+  background-color: #ffce31;
+  color: #fff;
+  height: 50px;
+  width: 130px;
+  border-radius: 50px;
+}
+
+#root .landingPage header form button:hover {
+  opacity: 0.9;
+  box-shadow: 0 12px 16px 0 rgba(0, 0, 0, 0.24),
+    0 17px 50px 0 rgba(0, 0, 0, 0.19);
+}
+
+#root .landingPage .card .backgroundImage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  z-index: -1;
+  object-fit: cover;
+}
+
+#root .landingPage .card .backgroundImage.hideImage {
+  display: none;
+}
+
+#root .landingPage .card .cardPanel {
+  position: absolute;
+  height: 460px;
+  width: 700px;
+  background: rgba(154, 170, 228, 0.842);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: 1s;
+  border-radius: 35px;
+}
+
+#root .landingPage .card .cardPanel.hideCard {
+  background: transparent;
+}
+
+#root .landingPage .card .cardPanel .conditionIcon {
+  position: absolute;
+  height: 250px;
+  width: 250px;
+  top: 0;
+  right: 25px;
+}
+#root .landingPage .card .cardPanel .city {
+  position: absolute;
+  font-size: 80px;
+  top: 25px;
+  left: 25px;
+}
+#root .landingPage .card .cardPanel .temperature {
+  position: absolute;
+  font-size: 120px;
+  bottom: 0;
+  right: 150px;
+  transform: translateX(50%);
+}
+#root .landingPage .card .cardPanel .realFeelText {
+  position: absolute;
+  font-size: 40px;
+  bottom: 30px;
+  left: 25px;
+}
+#root .landingPage .card .cardPanel .realFeelValue {
+  position: absolute;
+  font-size: 40px;
+  bottom: 30px;
+  left: 220px;
+}
+#root .landingPage .card .cardPanel .conditionText {
+  position: absolute;
+  font-size: 30px;
+  top: 250px;
+  right: 150px;
+  transform: translate(50%, -50%);
+}
+#root .landingPage .card .cardPanel .windText {
+  position: absolute;
+  height: 130px;
+  width: 130px;
+  top: calc(50% - 10px);
+  left: 25px;
+  transform: translateY(-50%);
+}
+#root .landingPage .card .cardPanel .windValue {
+  position: absolute;
+  font-size: 30px;
+  top: calc(50% + 100px);
+  left: 100px;
+  transform: translate(-50%, -50%);
+}
+
+#root .landingPage .card .cardPanel .favorite {
+  position: absolute;
+  height: 40px;
+  width: 40px;
+  top: 120px;
+  left: 30px;
+}
+
+#root .landingPage header form .errorMsg.noShow {
+  display: none;
+}
+
+#root .landingPage header .cityChooser .citiesList {
+  position: absolute;
+  top: 65px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1;
+}
+
+#root .landingPage header .cityChooser .citiesList.noShow {
+  display: none;
+}
+
+#root .landingPage header .cityChooser .citiesList p {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  background-color: #fff;
+  border-bottom: 1px solid #000;
+}
+
+#root .landingPage header .cityChooser .citiesList p:hover {
+  cursor: pointer;
+  background-color: rgb(185, 174, 174);
+}
+
+@media (max-width: 1500px) {
+  #root .landingPage .card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #root .landingPage .card .dailyDetails.show,
+  #root .landingPage .card .cardPanel.detailView {
+    all: unset;
+  }
+
+  #root .landingPage .card .dailyDetails.show {
+    position: relative;
+    height: 180px;
+    width: 730px;
+    margin: 0 15px;
+  }
+
+  #root .landingPage .card .dailyDetails.show .dayCard {
+    height: 180px;
+  }
+
+  #root .landingPage .card .cardPanel.detailView {
+    position: relative;
+    height: 460px;
+    width: 730px;
+    background: rgba(154, 170, 228, 0.842);
+    margin: 0 15px;
+  }
+}
