@@ -79,7 +79,7 @@ function dailyCards(days, icons, temps) {
 //Fetch cities list
 async function fetchCities() {
   
-    const citiesData = await fetch("cities/city.list.json");
+    const citiesData = await fetch("frontend/cities/city.list.json");
     const citiesJson = await citiesData.json();
     
     for (const city of citiesJson) {

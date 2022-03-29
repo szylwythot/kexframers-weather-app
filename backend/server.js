@@ -41,7 +41,7 @@ const server = http.createServer((req, res) => {
 	
 	`;
     
-	let filePath = path.resolve(__dirname + '/../frontend' + req.url);
+	let filePath = path.resolve(__dirname + '/../' + req.url);
     
 	fs.access(filePath, fs.constants.R_OK, (err) => {
 	if(err){
