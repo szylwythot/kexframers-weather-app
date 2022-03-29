@@ -307,7 +307,7 @@ body {
   top: 65px;
   left: 50%;
   transform: translateX(-50%);
-  width: max-content;
+  width: 300px;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1;

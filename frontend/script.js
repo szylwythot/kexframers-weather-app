@@ -7,82 +7,15 @@ function Weather(city, temperature, feelslike, conditionText, conditionIcon, win
     this.conditionIcon = conditionIcon;
     this.wind = wind;
 }
-
-function City(name, state, country, isFav, id, index){
-    this.name = name;
-    this.state = state;
-    this.country = country;
-    this.isFav = isFav;
-    this.id = id;
-    this.index = index;
-
-    this.equals = function (otherCity) {
-        if(this.name === otherCity.name && this.state === otherCity.state && this.country === otherCity.country){
-            return true;
-        } else{
-            return false;
-        }
-    };
-    
-    this.convertToString = function () {
-        let result = "";
-        if(this.state ===""){
-            result = `${this.name}-${this.country}`;
-        }
-        else{
-            result = `${this.name}-${this.state}-${this.country}`;
-        }
-        return result; 
-    };
-
-    this.convertToListElement = function(){ // listelement in city chooser dropdown
-        return `<p class="cityElement">${this.convertToString()}</p>`;
-    };
-
-    this.matchSubstring = function (substring) {
-        return this.convertToString().toLowerCase().substring(0, substring.length) === substring.toLowerCase();
-    }
-}
-
-function checkCityIsValid(cityString){
-
-}
-
-function generateCity(cityString, cities) { 
-
-    let todayCityArr = cityString.split("-");
-
-    console.log(cityString.value);
-    let newCity;
-    if (todayCityArr.length === 3) {
-        newCity = new City(todayCityArr[0], todayCityArr[1], todayCityArr[2]);
-    }
-    if (todayCityArr.length === 2) {
-        newCity = new City(todayCityArr[0], "", todayCityArr[1]);
-    }
-
-    for(const city of cities){
-        if(newCity.equals(city)){
-            newCity.index = city.index;
-            newCity.isFav = city.isFav;
-            newCity.id = city.id;
-            break;
-        }
-    }
-
-    return newCity;
-}
-
 //Global variables
 let cities = [];
-let idLength;
 let days = [];
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 //Generate weather card HTML
 function weatherCard(weather) {
     return `
-    <h2 class="city">${weather.city.name}</h2>
+    <h2 class="city">${weather.city}</h2>
     <p class="temperature">${Math.round(weather.temperature * 10) / 10}°</p>
     <p class="realFeelText">Real feel</p>
     <p class="realFeelValue">${Math.round(weather.feelslike * 10) / 10}°</p>
@@ -143,58 +76,76 @@ function dailyCards(days, icons, temps) {
     `
 }
 
-
-
 //Fetch cities list
 async function fetchCities() {
+  
     const citiesData = await fetch("cities/city.list.json");
     const citiesJson = await citiesData.json();
-
-    const jsonLength = citiesJson.length;
-    idLength = Array.from(String(jsonLength)).length;
     
-    for (let i = 0; i < jsonLength; i++) {
-        const cityID = String(i).padStart(idLength, '0');
-        cities.push(new City(citiesJson[i].name, citiesJson[i].state, citiesJson[i].country, false, cityID, i));
+    for (const city of citiesJson) {
+        cities.push(city.name);
     }
-    checkFavCityIdsFromCookie();
+
+    const uniqueCities = [...new Set(cities)];
+    cities = [];
+
+    for (const uniqueCity of uniqueCities) {
+        cities.push({name: uniqueCity, isFav: false});
+    }
     return cities;
 }
 
 //Generate autocomplete list
-function generateAutoCompleteList(inputString, cities) {
+function generateAutoCompleteList(inputValue, cities) {
     let matchedArr = [];
     let matchedHTML = "";
     const citiesList = document.querySelector(".citiesList");
 
     for (const city of cities) {
-        if (city.matchSubstring(inputString)) {
-            matchedArr.push(city);
+        if (inputValue.toLowerCase() === city.name.substring(0, inputValue.length).toLowerCase()) {
+            matchedArr.push(city.name);
         }
     }
 
     //Sort results and add to HTML string
     matchedArr.sort();
     for (const matchedCity of matchedArr) {
-        matchedHTML += matchedCity.convertToListElement();
+        matchedHTML += `<p class="listElement">${matchedCity}</p>`;
     }
-
+    
     citiesList.classList.remove("noShow");
     citiesList.innerHTML = "";
     citiesList.insertAdjacentHTML("beforeend", matchedHTML)
 }
 
-
 //Generate favorites list
 function generateFavoriteList(cities) {
-    let favHTML = "";
-    for (const city of cities) { // autocomplete listel összevonni
-        if (city.isFav) {
-            favHTML += city.convertToListElement();
-        }
+    let citiesInCookies = []
+    const cookiesArr = document.cookie.split(";");
+    for (const cookie of cookiesArr) {
+        citiesInCookies.push(cookie.trim().split("=")[1])
     }
 
+    let cityIndex = cities.findIndex((city) => city.name === cities.name);
+    let isInCookie = checkFavFromCookie(`${cityIndex}`);
+    let favHTML = "";
     const citiesList = document.querySelector(".citiesList");
+    
+    for (const cityInCookies of citiesInCookies) {
+        if (cityInCookies !== undefined) {
+            favHTML += `
+                <p class="listElement">${cityInCookies}</p>
+            `;
+        }
+    }
+    for (const city of cities) {
+        if ((city.isFav === true || isInCookie) && !citiesInCookies.includes(city.name)) {
+            favHTML += `
+            <p class="listElement">${city.name}</p>
+            `;
+        }
+    }
+    
     citiesList.classList.remove("noShow");
     citiesList.innerHTML = "";
     citiesList.insertAdjacentHTML("beforeend", favHTML)
@@ -209,7 +160,10 @@ function clearList() {
 
 //Change star image source if favorite city
 function checkFav(getCity) {
-    if (getCity.isFav) {
+    let cityIndex = cities.findIndex((city) => city.name === getCity);
+    let isInCookie = checkFavFromCookie(`${cityIndex}`);
+
+    if (cities[cityIndex].isFav || isInCookie) {
         return `star_fill.png`
     } else {
         return `star_empty.png`
@@ -217,8 +171,8 @@ function checkFav(getCity) {
 }
 
 //Pexels - get image url for city
-async function fetchBackgroundImage(cityName) {
-    const fetchImagesObject = await fetch(`https://api.pexels.com/v1/search?query=${cityName}%20city&orientation=landscape`, {
+async function fetchBackgroundImage(city) {
+    const fetchImagesObject = await fetch(`https://api.pexels.com/v1/search?query=${city}%20city&orientation=landscape`, {
         "mode": "cors",
         "headers": {
             "Authorization": "563492ad6f91700001000001c41dd7efd70045529f2e15681dfa9701"
@@ -226,9 +180,6 @@ async function fetchBackgroundImage(cityName) {
     });
     const imagesObject = await fetchImagesObject.json();
 
-    // let photoNumber = Math.floor(Math.random() * imagesObject.photos.length);
-    // let photoNumber = 2;
-    // return imagesObject.photos[photoNumber].src.original;
     return imagesObject.photos[2].src.original;
 }
 
@@ -240,23 +191,18 @@ function changeBackgroundImage(imageSource) {
 }
 
 //Cookie fun
-function checkFavCityIdsFromCookie() {
-    let favCityIds = [];
+function checkFavFromCookie(id) {
     const cookiesArr = document.cookie.split(";");
-    if(cookiesArr.length !== 0){
-        for (const cookie of cookiesArr) {
-            console.log(cookie); /// TODO-bug: ezt kell megcsinálni!
-            // if (cookiesArr[0].trim().substring(0, idLength) === id) {
-            //     return true;
-            // }
+    for (const cookie of cookiesArr) {
+        if (cookie.trim().substring(0, id.length) === id) {
+            return true;
         }
     }
     return false;
 }
 
-//Forecast api request - we have 2 accounts with 2 apikey use any of them
-// const apiKey = "bd28a9a500301edcfb782e80278bfea5";
-const apiKey = "259461a6514a016debd1e96b404d6bb5";
+//Forecast api request
+const apiKey = "bd28a9a500301edcfb782e80278bfea5";
 
 async function getForecastData(lat, lon) {
     const forecastData = await fetch(`https://api.openweathermap.org/data/2.5/onecall?units=metric&exclude=minutely,current,hourly,alerts&lat=${lat}&lon=${lon}&appid=${apiKey}`);
@@ -321,8 +267,11 @@ function loadAnimationHTML() {
 async function loadEvent() {
     //Set variables
     const baseWeatherUrl = "https://api.openweathermap.org/data/2.5/weather?units=metric";
-    // let todayCity = "";
+    let todayCity = "";
     const rootElement = document.getElementById("root");
+
+    //Fetch cities
+    const citiesArr = await fetchCities();
 
     //Generate HTML body
     let htmlBody = `
@@ -346,8 +295,6 @@ async function loadEvent() {
     `;
     
     rootElement.insertAdjacentHTML("beforeend", htmlBody);
-    //Fetch cities
-    const citiesArr = await fetchCities();
 
     //Form input field event listener (autocomplete)
     const inputCity = rootElement.querySelector(".cityInput");
@@ -357,8 +304,8 @@ async function loadEvent() {
             generateAutoCompleteList(event.target.value, citiesArr);
 
             //Fill input field on clicking list item
-            const cityElement = document.querySelectorAll(".cityElement");
-            const autoFillElements = Array.from(cityElement);
+            const listElement = document.querySelectorAll(".listElement");
+            const autoFillElements = Array.from(listElement);
 
             for (const autoFillElement of autoFillElements) {
                 autoFillElement.addEventListener("click", function (event) {
@@ -379,8 +326,8 @@ async function loadEvent() {
         generateFavoriteList(cities);
 
         // Input city - autofill on click
-        const cityElement = document.querySelectorAll(".cityElement");
-        const autoFillElements = Array.from(cityElement);
+        const listElement = document.querySelectorAll(".listElement");
+        const autoFillElements = Array.from(listElement);
 
         for (const autoFillElement of autoFillElements) {
             autoFillElement.addEventListener("click", function (event) {
@@ -400,35 +347,29 @@ async function loadEvent() {
         const cardDiv = rootElement.querySelector(".cardPanel");
         const dailyDetails = rootElement.querySelector(".dailyDetails");
         const cityInput = rootElement.querySelector(".cityInput");
+        todayCity = cityInput.value;
         const errorMsg = rootElement.querySelector(".errorMsg");
-
-        let todayCity = generateCity(cityInput.value, cities);
-        //if(todayCity.length)...// should check the cases to find out the bad citynames!
-
-        weatherUrl = `${baseWeatherUrl}&q=${todayCity.name},${todayCity.state},"${todayCity.country}"&appid=${apiKey}`;
 
         //Handle invalid city names
         try {
             cardDiv.innerHTML = "";
             cardDiv.insertAdjacentHTML("beforeend", loadAnimationHTML())
             
-            const fetchedWeather = await fetch(weatherUrl);
+            const fetchedWeather = await fetch(`${baseWeatherUrl}&q=${todayCity}&appid=${apiKey}`);
             const weatherJson = await fetchedWeather.json();
-            console.log(weatherJson);
-
-            let todayTemperature = weatherJson.main.temp;
-            let todayFeelsLikeTemp = weatherJson.main.feels_like;
-            // itt kell matchelni
-            let todayConditionText = weatherJson.weather[0].main;
-            let todayConditionIcon = weatherJson.weather[0].icon;
-            let todayWind = weatherJson.wind.speed;
             
-            let weather = new Weather(todayCity, todayTemperature, todayFeelsLikeTemp, todayConditionText, todayConditionIcon, todayWind); 
-            const imageSource = await fetchBackgroundImage(weather.city.name);
+            let cityName = todayCity;
+            let temperature = weatherJson.main.temp;
+            let feelsLikeTemp = weatherJson.main.feels_like;
+            let conditionText = weatherJson.weather[0].main;
+            let conditionIcon = weatherJson.weather[0].icon;
+            let wind = weatherJson.wind.speed;
+            
+            let weather = new Weather(cityName, temperature, feelsLikeTemp, conditionText, conditionIcon, wind); 
+            const imageSource = await fetchBackgroundImage(cityName);
             
             //Get forecast data by lat,lon values
             const forecastData = await getForecastData(weatherJson.coord.lat, weatherJson.coord.lon);
-            console.log(forecastData);
             
             icons = [];
             temps = [];
@@ -506,26 +447,26 @@ async function loadEvent() {
 
             //Favorite button click
             const favBtn = document.querySelector(".favorite");
-            favBtn.addEventListener("click", function (event) {
 
-            let cityID = cities.findIndex((city) => city.equals(todayCity)).id;
+            favBtn.addEventListener("click", function (event) {
+                const cityIndex = cities.findIndex((city) => city.name === cityName);
+                let isInCookie = checkFavFromCookie(`${cityIndex}`);
                 
-                if (todayCity.isFav) {
+                if (cities[cityIndex].isFav === false && !isInCookie) {
                     event.target.classList.add("clicked");
                     event.target.src = "images/star_fill.png";
-                    todayCity.isFav = true;
-                    document.cookie = `${cityID}=${todayCity.name};max-age=3600`
+                    cities[cityIndex].isFav = true;
+                    document.cookie = `${cityIndex}=${cities[cityIndex].name};max-age=3600`
                     console.log(document.cookie);
                 } else {
                     event.target.classList.remove("clicked");
                     event.target.src = "images/star_empty.png";
-                    todayCity.isFav = false;
-                    document.cookie = `${cityID}=; expires=Thu, 01 Jan 1970 00:00:00 UTC`
+                    cities[cityIndex].isFav = false;
+                    document.cookie = `${cityIndex}=; expires=Thu, 01 Jan 1970 00:00:00 UTC`
                     console.log(document.cookie);
                 }
             })
         } catch (error) {
-            console.log(error);
             if (errorMsg.classList.length === 2) {
                 errorMsg.classList.remove("noShow");
             }
